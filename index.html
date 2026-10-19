@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>호랑이 선물 뽑기</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Jua&family=IBM+Plex+Sans+KR:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#EAF0F7; --surface:#FFFFFF; --ink:#1D2B4F; --muted:#6B7896;
+  --line:#CFD9E8; --accent:#2F5BEA; --accent-ink:#FFFFFF; --ball:#FFD24A; --ball-ink:#3A2A00;
+  --danger:#C23B4B;
+  color-scheme:light;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#121A2E; --surface:#1B2540; --ink:#E6ECF8; --muted:#94A1BF;
+    --line:#2E3A5C; --accent:#6E8EFF; --accent-ink:#0F1730; --ball:#FFD24A; --ball-ink:#3A2A00;
+    --danger:#FF7A88; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#121A2E; --surface:#1B2540; --ink:#E6ECF8; --muted:#94A1BF;
+  --line:#2E3A5C; --accent:#6E8EFF; --accent-ink:#0F1730; --ball:#FFD24A; --ball-ink:#3A2A00;
+  --danger:#FF7A88; color-scheme:dark;
+}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{
+  margin:0; background:var(--bg); color:var(--ink);
+  font-family:"IBM Plex Sans KR",-apple-system,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+  font-size:16px; line-height:1.5;
+}
+main{max-width:720px; margin:0 auto; padding:32px 20px 64px}
+h1{
+  font-family:"Jua","IBM Plex Sans KR",sans-serif; font-weight:400;
+  font-size:2.4rem; line-height:1.1; margin:0 0 6px; letter-spacing:-0.01em;
+}
+.sub{color:var(--muted); margin:0 0 24px}
+
+.board{
+  background:var(--surface); border:1.5px solid var(--line); border-radius:18px;
+  padding:16px; min-height:72px; display:flex; flex-wrap:wrap; gap:8px; align-items:flex-start;
+}
+.empty{color:var(--muted); align-self:center}
+.chip{
+  display:inline-flex; align-items:center; gap:6px;
+  background:var(--bg); border:1px solid var(--line); border-radius:999px;
+  padding:6px 8px 6px 14px; font-weight:600;
+}
+.chip button{
+  border:0; background:transparent; color:var(--muted); cursor:pointer;
+  width:24px; height:24px; border-radius:50%; font-size:16px; line-height:1;
+}
+.chip button:hover{color:var(--danger)}
+.count{color:var(--muted); font-size:.9rem; margin:8px 4px 20px}
+
+.row{display:flex; gap:8px; align-items:stretch}
+.row input{
+  flex:1; min-width:0; font:inherit; color:var(--ink);
+  background:var(--surface); border:1.5px solid var(--line); border-radius:12px; padding:12px 14px;
+}
+.row input:focus{outline:none; border-color:var(--accent)}
+button.btn{
+  font:inherit; font-weight:600; cursor:pointer; border-radius:12px; padding:12px 18px;
+  border:1.5px solid var(--accent); background:transparent; color:var(--accent); white-space:nowrap;
+}
+button.btn.primary{background:var(--accent); color:var(--accent-ink)}
+button.btn:disabled{opacity:.4; cursor:not-allowed}
+button:focus-visible,input:focus-visible{outline:3px solid var(--ball); outline-offset:2px}
+.spacer{flex:0 0 12px}
+.msg{color:var(--danger); font-size:.9rem; min-height:1.4em; margin:6px 4px 0}
+
+.result{margin-top:36px}
+.result h2{font-family:"Jua",sans-serif; font-weight:400; font-size:1.6rem; margin:0 0 4px}
+.assign{display:flex; flex-wrap:wrap; gap:10px 16px; margin:12px 0 24px; color:var(--muted)}
+.assign span b{color:var(--ink)}
+.pairs{display:grid; gap:12px}
+.pair{
+  display:flex; align-items:center; flex-wrap:wrap; gap:10px;
+  background:var(--surface); border:1.5px solid var(--line); border-radius:18px; padding:14px 16px;
+}
+.who{display:flex; align-items:center; gap:8px; font-weight:600; font-size:1.1rem}
+.ball{
+  width:36px; height:36px; border-radius:50%; flex:0 0 36px;
+  display:grid; place-items:center; background:var(--ball); color:var(--ball-ink);
+  font-family:"Jua",sans-serif; font-size:1.15rem;
+  box-shadow:inset -3px -4px 0 rgba(0,0,0,.12);
+}
+.link{color:var(--muted); font-size:1.3rem; padding:0 4px}
+.idx{color:var(--muted); font-weight:600; min-width:1.8em; font-variant-numeric:tabular-nums}
+.tag{margin-left:auto; color:var(--muted); font-size:.85rem}
+.actions{display:flex; gap:8px; margin-top:20px; flex-wrap:wrap}
+
+.reveal .pair{animation:drop .45s cubic-bezier(.2,.9,.3,1.2) both}
+@keyframes drop{from{opacity:0; transform:translateY(-10px) scale(.97)} to{opacity:1; transform:none}}
+@media (prefers-reduced-motion:reduce){.reveal .pair{animation:none}}
+
+@media (max-width:480px){
+  h1{font-size:2rem}
+  .row{flex-wrap:wrap}
+  .row input{flex:1 1 100%}
+  .row .btn{flex:1}
+  .spacer{display:none}
+}
+</style>
+</head>
+<body>
+<main>
+  <h1>호랑이 선물 뽑기 🐯</h1>
+  <p class="sub">호랑이의 이름을 모두 입력하고 완료를 누르면 내 번호와 선물 줄 다른 사람의 번호가 정해집니다. 내 번호는 나오지 않으니 선물은 걱정말아요!</p>
+
+  <div class="board" id="board" aria-live="polite"></div>
+  <div class="count" id="count"></div>
+
+  <div class="row">
+    <input id="name" type="text" placeholder="이름 입력" autocomplete="off" maxlength="20" aria-label="이름">
+    <button class="btn" id="add">입력</button>
+    <span class="spacer"></span>
+    <button class="btn primary" id="done">완료</button>
+  </div>
+  <div class="msg" id="msg"></div>
+
+  <section class="result" id="result" hidden>
+    <h2>뽑기 결과</h2>
+    <div class="assign" id="assign"></div>
+    <div class="pairs" id="pairs"></div>
+    <div class="actions">
+      <button class="btn" id="again">다시 뽑기</button>
+      <button class="btn" id="reset">처음부터</button>
+    </div>
+  </section>
+</main>
+
+<script>
+const names = [];
+const $ = id => document.getElementById(id);
+const input = $('name'), board = $('board'), msg = $('msg');
+
+function renderBoard(){
+  board.innerHTML = '';
+  if(!names.length){
+    board.innerHTML = '<span class="empty">아직 입력된 이름이 없어요. 아래에서 이름을 입력하세요.</span>';
+  }
+  names.forEach((n,i)=>{
+    const c = document.createElement('span');
+    c.className = 'chip';
+    c.textContent = n;
+    const x = document.createElement('button');
+    x.setAttribute('aria-label', n + ' 삭제');
+    x.textContent = '×';
+    x.onclick = () => { names.splice(i,1); renderBoard(); };
+    c.appendChild(x);
+    board.appendChild(c);
+  });
+  $('count').textContent = names.length ? `${names.length}명` : '';
+  $('done').disabled = names.length < 2;
+}
+
+function addName(){
+  const v = input.value.trim();
+  msg.textContent = '';
+  if(!v){ msg.textContent = '이름을 입력하세요.'; input.focus(); return; }
+  if(names.includes(v)){ msg.textContent = `‘${v}’는 이미 있어요.`; input.select(); return; }
+  names.push(v);
+  input.value = '';
+  input.focus();
+  renderBoard();
+}
+
+function shuffle(a){
+  for(let i=a.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i],a[j]] = [a[j],a[i]];
+  }
+  return a;
+}
+
+function makePairs(){
+  if(names.length < 2){ msg.textContent = '두 명 이상 입력하세요.'; return; }
+  msg.textContent = '';
+  const nums = shuffle(names.map((_,i)=>i+1));
+  const people = names.map((n,i)=>({name:n, num:nums[i]}));
+
+  $('assign').innerHTML = '';
+
+  // 랜덤 순서로 한 바퀴 돌게 연결 → 아무도 자기 번호를 받지 않음 (홀수도 OK)
+  const circle = shuffle([...people]);
+  circle.forEach((p,i)=>{ p.to = circle[(i+1)%circle.length]; });
+
+  const wrap = $('pairs');
+  wrap.innerHTML = '';
+  [...people].sort((a,b)=>a.num-b.num).forEach((p,i)=>{
+    const el = document.createElement('div');
+    el.className = 'pair';
+    el.style.animationDelay = (i*90)+'ms';
+    el.innerHTML = `<span class="idx">${i+1}.</span>`
+      + `<span class="who"><span class="ball">${p.num}</span>${esc(p.name)}</span>`
+      + '<span class="link" aria-hidden="true">→</span>'
+      + `<span class="who"><span class="ball">${p.to.num}</span>${esc(p.to.name)}</span>`
+      + '<span class="tag">에게 선물</span>';
+    wrap.appendChild(el);
+  });
+
+  const r = $('result');
+  r.hidden = false;
+  r.classList.remove('reveal'); void r.offsetWidth; r.classList.add('reveal');
+  r.scrollIntoView({behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto':'smooth', block:'start'});
+}
+
+function esc(s){return s.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+
+$('add').onclick = addName;
+input.addEventListener('keydown', e=>{ if(e.key==='Enter' && !e.isComposing){ e.preventDefault(); addName(); }});
+$('done').onclick = makePairs;
+$('again').onclick = makePairs;
+$('reset').onclick = ()=>{ names.length=0; $('result').hidden=true; renderBoard(); input.focus(); };
+
+renderBoard();
+</script>
+</body>
+</html>
